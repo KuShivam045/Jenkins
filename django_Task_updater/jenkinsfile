@@ -15,7 +15,7 @@ pipeline {
         
         stage("Deploy"){
             steps{
-                sh "docker build -t task_upda /django_Task_updater/ "
+                sh "docker build -t task_upda /django_Task_updater/Dockerfile "
                 sh  "echo docker images "
                 sh "docker run -d -p 8000:8001 task_upda"
                
