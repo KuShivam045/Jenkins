@@ -15,7 +15,7 @@ pipeline {
         
         stage("Deploy"){
             steps{
-                sh "docker build -t task_upda -f Dockerfile ."
+                sh "docker build -t task_upda -f Dockerfile"
                 sh  "echo docker images "
                 sh "docker run -d -p 8000:8001 task_upda"
                 sh  "echo docker ps -a "
