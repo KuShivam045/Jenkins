@@ -1,0 +1,26 @@
+pipeline {
+    agent any
+    
+    stages{
+        stage("Code"){
+            steps{
+                git url: "https://github.com/anirudhadak2/react_django_demo_app1.git", branch: "main"
+            }
+        }
+        stage("test message "){
+            steps{
+                sh "echo thsis pipleine going to deploy djang app"  
+            }
+        }
+        
+        stage("Deploy"){
+            steps{
+                  sh " docker-compose  down "
+                 sh  "docker-compose up -d  --no-deps --build  web "
+                   sh "docker ps "
+               
+            }
+        }
+    }
+}
+
