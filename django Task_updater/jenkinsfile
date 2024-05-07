@@ -4,7 +4,7 @@ pipeline {
     stages{
         stage("Code"){
             steps{
-                git url: "https://github.com/anirudhadak2/react_django_demo_app1.git", branch: "main"
+                git url: "https://github.com/KuShivam045/Jenkins.git", branch: "main"
             }
         }
         stage("test message "){
