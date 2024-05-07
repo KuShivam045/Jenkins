@@ -15,9 +15,9 @@ pipeline {
         
         stage("Deploy"){
             steps{
-                sh " docker-compose  down "
-                sh  "docker-compose up -d  --no-deps --build  web "
-                sh "docker ps "
+                sh "docker build -t task_upda . "
+                sh  "echo docker images "
+                sh "docker run -d -p 8000:8001 task_upda"
                
             }
         }
