@@ -9,13 +9,13 @@ pipeline {
         }
         stage("test message "){
             steps{
-                sh "echo thsis pipleine going to deploy djang app"  
+                sh "echo this pipleine going to deploy djang app"  
             }
         }
         
         stage("Deploy"){
             steps{
-                sh "docker build -t task_upda . "
+                sh "docker build -t task_upda /django_Task_updater/ "
                 sh  "echo docker images "
                 sh "docker run -d -p 8000:8001 task_upda"
                
