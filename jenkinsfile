@@ -55,18 +55,12 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 script {
-                    // Set KUBECONFIG environment variable
-                    env.KUBECONFIG = KUBE_CONFIG
-                    
+
                     // Update the Kubernetes deployment with the new image
                     sh '''
-                        kubectl set image deployment/${DEPLOYMENT_NAME} ${DEPLOYMENT_NAME}=${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG} --namespace=${NAMESPACE}
+                        kubectl apply -f deployment.yml
                     '''
-                    
-                    // Optionally, rollout the deployment to ensure it is updated
-                    sh '''
-                        kubectl rollout status deployment/${DEPLOYMENT_NAME} --namespace=${NAMESPACE}
-                    '''
+
                 }
             }
         }
