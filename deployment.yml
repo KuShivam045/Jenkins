@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: django-deployment  # Replace with your deployment name
+  # namespace: your-namespace    # Replace with your Kubernetes namespace
+spec:
+  replicas: 3  # Number of replicas you want to run
+  selector:
+    matchLabels:
+      app: django-deployment  # Replace with your application label
+  template:
+    metadata:
+      labels:
+        app: django-deployment  # Replace with your application label
+    spec:
+      containers:
+        - name: django  # Replace with your container name
+          image: 211125324306.dkr.ecr.ap-south-1.amazonaws.com/jenkins_k8s:latest  # Default image
+          ports:
+            - containerPort: 8001  # Replace with the port your app uses
+          env:
+            - name: PORT  # Optional environment variable
+              value: "8001"       # Replace with the value you need
+
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: django-deployment  # Replace with your service name
+  # namespace: your-namespace  # Replace with your Kubernetes namespace
+spec:
+  type: LoadBalancer  # Change to ClusterIP or NodePort if needed
+  selector:
+    app: django-deployment  # This should match the label defined in your deployment
+  ports:
+    - port: 80  # The port that the service will expose
+      targetPort: 8001  # The port on the container to forward traffic to
