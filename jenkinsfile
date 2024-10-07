@@ -1,0 +1,70 @@
+pipeline {
+    agent any
+    
+    environment {
+        AWS_REGION = 'ap-south-1'  // Specify your AWS region
+        ECR_REGISTRY = '211125324306.dkr.ecr.ap-south-1.amazonaws.com'  // Replace with your AWS ECR registry URI
+        ECR_REPOSITORY = 'jenkins_k8s'  // Replace with your ECR repository name
+        IMAGE_TAG = "${env.BUILD_ID}"  // Use Jenkins BUILD_ID as the Docker image tag
+    }
+    
+    stages {
+        stage('Checkout Code') {
+            steps {
+                // Check out the code from your repository
+                git 'https://github.com/KuShivam045/Jenkins.git'
+            }
+        }
+        
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    // Build Docker image
+                    docker.build("${ECR_REPOSITORY}:${IMAGE_TAG}")
+                }
+            }
+        }
+        
+        stage('Authenticate to AWS ECR') {
+            steps {
+                script {
+                    // Authenticate Docker to AWS ECR
+                    sh '''
+                        aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REGISTRY}
+                    '''
+                }
+            }
+        }
+        
+        stage('Tag and Push Docker Image') {
+            steps {
+                script {
+                    // Tag the Docker image with the ECR registry
+                    sh '''
+                        docker tag ${ECR_REPOSITORY}:${IMAGE_TAG} ${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}
+                    '''
+                    
+                    // Push the Docker image to AWS ECR
+                    sh '''
+                        docker push ${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}
+                    '''
+                }
+            }
+        }
+        
+    }
+    
+    post {
+        always {
+            // Cleanup Docker images to free up space on the agent
+            sh 'docker rmi ${ECR_REPOSITORY}:${IMAGE_TAG} || true'
+            sh 'docker rmi ${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG} || true'
+        }
+        success {
+            echo 'Deployment to AWS ECR was successful!'
+        }
+        failure {
+            echo 'Deployment failed.'
+        }
+    }
+}
