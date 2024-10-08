@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: django-deployment  # Replace with your deployment name
+  name: django-deployment  # Replace with your deployment 
 spec:
   replicas: 3  # Number of replicas you want to run
   selector:
