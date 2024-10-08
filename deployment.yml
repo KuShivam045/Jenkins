@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: django-deployment  # Replace with your deployment name
-  # namespace: your-namespace    # Replace with your Kubernetes namespace
 spec:
   replicas: 3  # Number of replicas you want to run
   selector:
@@ -13,6 +12,8 @@ spec:
       labels:
         app: django-deployment  # Replace with your application label
     spec:
+      imagePullSecrets:
+        - name: ecr-secret  # The name of your secret
       containers:
         - name: django  # Replace with your container name
           image: 211125324306.dkr.ecr.ap-south-1.amazonaws.com/jenkins_k8s:latest  # Default image
@@ -21,14 +22,11 @@ spec:
           env:
             - name: PORT  # Optional environment variable
               value: "8001"       # Replace with the value you need
-
-
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: django-deployment  # Replace with your service name
-  # namespace: your-namespace  # Replace with your Kubernetes namespace
 spec:
   type: LoadBalancer  # Change to ClusterIP or NodePort if needed
   selector:
