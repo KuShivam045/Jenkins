@@ -2,10 +2,10 @@ pipeline {
     agent any
     
     environment {
-        AWS_REGION = 'us-east-1'  // Specify your AWS region for public ECR
-        ECR_PUBLIC_REGISTRY = 'public.ecr.aws/o8g4t5k9'  // Replace with your public ECR registry URI
-        ECR_REPOSITORY = 'k8s-django'  // Replace with your ECR repository name
-        IMAGE_TAG = "latest"  // Using latest tag or you can use ${env.BUILD_ID} for dynamic tags
+        AWS_REGION = 'ap-south-1'  // Specify your AWS region
+        ECR_REGISTRY = '211125324306.dkr.ecr.ap-south-1.amazonaws.com'  // Replace with your AWS ECR registry URI
+        ECR_REPOSITORY = 'jenkins_k8s'  // Replace with your ECR repository name
+        IMAGE_TAG = "${env.BUILD_ID}"  // Use Jenkins BUILD_ID as the Docker image tag
     }
     
     stages {
@@ -25,28 +25,28 @@ pipeline {
             }
         }
         
-        stage('Authenticate to Public AWS ECR') {
+        stage('Authenticate to AWS ECR') {
             steps {
                 script {
-                    // Authenticate Docker to public AWS ECR
+                    // Authenticate Docker to AWS ECR
                     sh '''
-                        aws ecr-public get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_PUBLIC_REGISTRY}
+                        aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REGISTRY}
                     '''
                 }
             }
         }
         
-        stage('Tag and Push Docker Image to Public ECR') {
+        stage('Tag and Push Docker Image') {
             steps {
                 script {
-                    // Tag the Docker image with the public ECR registry
+                    // Tag the Docker image with the ECR registry
                     sh '''
-                        docker tag ${ECR_REPOSITORY}:${IMAGE_TAG} ${ECR_PUBLIC_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}
+                        docker tag ${ECR_REPOSITORY}:${IMAGE_TAG} ${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}
                     '''
                     
-                    // Push the Docker image to the public AWS ECR repository
+                    // Push the Docker image to AWS ECR
                     sh '''
-                        docker push ${ECR_PUBLIC_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}
+                        docker push ${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}
                     '''
                 }
             }
@@ -55,23 +55,26 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 script {
+
                     // Update the Kubernetes deployment with the new image
                     sh '''
                         kubectl apply -f deployment.yml
                     '''
+
                 }
             }
         }
+        
     }
     
     post {
         always {
             // Cleanup Docker images to free up space on the agent
             sh 'docker rmi ${ECR_REPOSITORY}:${IMAGE_TAG} || true'
-            sh 'docker rmi ${ECR_PUBLIC_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG} || true'
+            sh 'docker rmi ${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG} || true'
         }
         success {
-            echo 'Deployment to Public AWS ECR was successful!'
+            echo 'Deployment to AWS ECR was successful!'
         }
         failure {
             echo 'Deployment failed.'
